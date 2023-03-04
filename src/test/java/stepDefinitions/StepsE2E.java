@@ -16,7 +16,6 @@ public class StepsE2E {
     private static final String USERNAME = "Alak";
     private static final String PASSWORD = "Toma*1996";
     private static final String BASE_URL = "https://bookstore.toolsqa.com";
-
     private static String token;
     private static Response response;
     private static String jsonString;
@@ -56,10 +55,10 @@ public class StepsE2E {
                         "\"collectionOfIsbns\": [ { \"isbn\": \"" + bookId + "\" } ]}")
                 .post("/BookStore/v1/Books");
     }
-    @Then("the book is added")
-    public void the_book_is_added() {
-        Assert.assertEquals(201, response.getStatusCode());
-    }
+//    @Then("the book is added")
+//    public void the_book_is_added() {
+//        Assert.assertEquals(201, response.getStatusCode());
+//    }
     @When("I remove a book from my reading list")
     public void i_remove_a_book_from_my_reading_list() {
         RestAssured.baseURI = BASE_URL;

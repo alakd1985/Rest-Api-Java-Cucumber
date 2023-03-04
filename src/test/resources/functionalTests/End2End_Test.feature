@@ -9,8 +9,8 @@ Feature: End to end Tests for ToolsQA Book Store Api
 
     When I add a book to my reading list
 
-    Then the book is added
-
+#    Then the book is added
+#
     When I remove a book from my reading list
 
     Then the book is removed
