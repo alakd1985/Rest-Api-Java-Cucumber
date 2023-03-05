@@ -7,6 +7,9 @@ import apiEngine.AddBooksRequest;
 import apiEngine.AuthorizationRequest;
 import apiEngine.ISBN;
 import apiEngine.RemoveBookRequest;
+import apiEngine.model.responses.Token;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
 
 import io.cucumber.java.en.Given;
@@ -24,17 +27,15 @@ public class StepsE2E {
     private static Response response;
     private static String jsonString;
     private static String bookId;
-
+    private static Token tokenResponse;
     @Given("I am an authorized user")
     public void i_am_an_authorized_user() {
-        AuthorizationRequest authRequest = new AuthorizationRequest("Toma", "Alak*1985");
         RestAssured.baseURI = BASE_URL;
         RequestSpecification request = RestAssured.given();
         request.header("Content-Type", "application/json");
+        AuthorizationRequest authRequest = new AuthorizationRequest("Alak", "Toma*1996");
         response = request.body(authRequest).post("/Account/v1/GenerateToken");
-        String jsonString = response.asString();
-        token = JsonPath.from(jsonString).get("token");
-        System.out.println(token);
+        tokenResponse = response.getBody().as(Token.class);
     }
 
     @Given("A list of books are available")
@@ -48,6 +49,7 @@ public class StepsE2E {
         System.out.println(books.size());
         bookId = books.get(0).get("isbn");
         System.out.println(bookId);
+
     }
 
     @When("I add a book to my reading list")
@@ -58,6 +60,7 @@ public class StepsE2E {
         request.header("Authorization", "Bearer " + token)
                 .header("Content-Type", "application/json");
         response = request.body(addBooksRequest).post("/BookStore/v1/Books");
+
     }
 
     @When("I remove a book from my reading list")
@@ -68,6 +71,7 @@ public class StepsE2E {
         request.header("Authorization", "Bearer " + token)
                 .header("Content-Type", "application/json");
         response = request.body(removeBookRequest).delete("/BookStore/v1/Book");
+
     }
 
     @Then("the book is removed")
@@ -82,7 +86,7 @@ public class StepsE2E {
         jsonString = response.asString();
         List<Map<String, String>> booksOfUser = JsonPath.from(jsonString).get("books");
         System.out.println(booksOfUser);
-//        Assert.assertEquals(0, booksOfUser.size());
+
     }
 
 }
