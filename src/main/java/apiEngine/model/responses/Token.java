@@ -8,4 +8,5 @@ public class Token {
     public String expires;
     public String status;
     public String result;
+
 }

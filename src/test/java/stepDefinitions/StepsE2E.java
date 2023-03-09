@@ -1,92 +1,59 @@
 package stepDefinitions;
 
-import java.util.List;
-import java.util.Map;
-
 import apiEngine.AddBooksRequest;
 import apiEngine.AuthorizationRequest;
 import apiEngine.ISBN;
 import apiEngine.RemoveBookRequest;
+import apiEngine.model.Book;
+import apiEngine.model.responses.Books;
 import apiEngine.model.responses.Token;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import apiEngine.model.responses.UserAccount;
 import org.junit.Assert;
-
+import apiTests.Endpoints;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import io.restassured.RestAssured;
-import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
-import io.restassured.specification.RequestSpecification;
 
 public class StepsE2E {
     private static final String USER_ID = "5cfbfc9f-8315-4b5b-83ba-05ae69db1001";
-    private static final String BASE_URL = "https://bookstore.toolsqa.com";
-    private static String token;
     private static Response response;
-    private static String jsonString;
-    private static String bookId;
     private static Token tokenResponse;
+    private static Book book;
+
     @Given("I am an authorized user")
     public void i_am_an_authorized_user() {
-        RestAssured.baseURI = BASE_URL;
-        RequestSpecification request = RestAssured.given();
-        request.header("Content-Type", "application/json");
         AuthorizationRequest authRequest = new AuthorizationRequest("Alak", "Toma*1996");
-        response = request.body(authRequest).post("/Account/v1/GenerateToken");
+        response = Endpoints.authenticateUser(authRequest);
         tokenResponse = response.getBody().as(Token.class);
     }
 
     @Given("A list of books are available")
     public void a_list_of_books_are_available() {
-        RestAssured.baseURI = BASE_URL;
-        RequestSpecification request = RestAssured.given();
-        response = request.get("/BookStore/v1/Books");
-        jsonString = response.asString();
-        List<Map<String, String>> books = JsonPath.from(jsonString).get("books");
-        Assert.assertTrue(books.size() > 0);
-        System.out.println(books.size());
-        bookId = books.get(0).get("isbn");
-        System.out.println(bookId);
-
+        response = Endpoints.getBooks();
+        Books books = response.getBody().as(Books.class);
+        book = books.books.get(0);
     }
 
     @When("I add a book to my reading list")
     public void i_add_a_book_to_my_reading_list() {
-        AddBooksRequest addBooksRequest = new AddBooksRequest(USER_ID, new ISBN(bookId));
-        RestAssured.baseURI = BASE_URL;
-        RequestSpecification request = RestAssured.given();
-        request.header("Authorization", "Bearer " + token)
-                .header("Content-Type", "application/json");
-        response = request.body(addBooksRequest).post("/BookStore/v1/Books");
-
+        ISBN isbn = new ISBN(book.isbn);
+        AddBooksRequest addBooksRequest = new AddBooksRequest(USER_ID, isbn);
+        response = Endpoints.addBook(addBooksRequest, tokenResponse.token);
     }
 
     @When("I remove a book from my reading list")
     public void i_remove_a_book_from_my_reading_list() {
-        RestAssured.baseURI = BASE_URL;
-        RequestSpecification request = RestAssured.given();
-        RemoveBookRequest removeBookRequest = new RemoveBookRequest(USER_ID, bookId);
-        request.header("Authorization", "Bearer " + token)
-                .header("Content-Type", "application/json");
-        response = request.body(removeBookRequest).delete("/BookStore/v1/Book");
-
+        RemoveBookRequest removeBookRequest = new RemoveBookRequest(USER_ID, book.isbn);
+        response = Endpoints.removeBook(removeBookRequest, tokenResponse.token);
     }
 
     @Then("the book is removed")
     public void the_book_is_removed() {
-        //Assert.assertEquals(204, response.getStatusCode());
-        RestAssured.baseURI = BASE_URL;
-        RequestSpecification request = RestAssured.given();
-        request.header("Authorization", "Bearer " + token)
-                .header("Content-Type", "application/json");
-        response = request.get("/Account/v1/User/" + USER_ID);
-        //Assert.assertEquals(200, response.getStatusCode());
-        jsonString = response.asString();
-        List<Map<String, String>> booksOfUser = JsonPath.from(jsonString).get("books");
-        System.out.println(booksOfUser);
-
+        response = Endpoints.getUserAccount(USER_ID, tokenResponse.token);
+        Assert.assertEquals(200, response.getStatusCode());
+        UserAccount userAccount = response.getBody().as(UserAccount.class);
+        Assert.assertEquals(0, userAccount.books.size());
     }
 
 }
