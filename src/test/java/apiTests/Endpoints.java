@@ -25,7 +25,6 @@ public class Endpoints {
         Response response = request.body(authRequest).post(Route.generateToken());
         if (response.statusCode() != HttpStatus.SC_OK)
             throw new RuntimeException("Authentication Failed. Content of failed Response: " + response.toString() + " , Status Code : " + response.statusCode());
-
         Token tokenResponse = response.body().jsonPath().getObject("$", Token.class);
         request.header("Authorization", "Bearer " + tokenResponse.token);
     }

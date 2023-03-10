@@ -17,7 +17,7 @@ import io.cucumber.java.en.When;
 import io.restassured.response.Response;
 
 public class StepsE2E {
-    private static final String USER_ID = "5cfbfc9f-8315-4b5b-83ba-05ae69db1001";
+    private final String USER_ID = "5cfbfc9f-8315-4b5b-83ba-05ae69db1001";
     private Response response;
     private IRestResponse<UserAccount> userAccountResponse;
     private Book book;
@@ -46,15 +46,14 @@ public class StepsE2E {
     @When("I remove a book from my reading list")
     public void i_remove_a_book_from_my_reading_list() {
         RemoveBookRequest removeBookRequest = new RemoveBookRequest(USER_ID, book.isbn);
-                response = endPoints.removeBook(removeBookRequest);
+        response = endPoints.removeBook(removeBookRequest);
     }
 
     @Then("the book is removed")
     public void the_book_is_removed() {
         Assert.assertEquals(204, response.getStatusCode());
-        
-                userAccountResponse = endPoints.getUserAccount(USER_ID);
-                Assert.assertEquals(200, userAccountResponse.getStatusCode());
+        userAccountResponse = endPoints.getUserAccount(USER_ID);
+        Assert.assertEquals(200, userAccountResponse.getStatusCode());
     }
 
 }
