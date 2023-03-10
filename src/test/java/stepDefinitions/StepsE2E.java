@@ -51,6 +51,7 @@ public class StepsE2E {
     @Then("the book is removed")
     public void the_book_is_removed() {
         response = Endpoints.getUserAccount(USER_ID, tokenResponse.token);
+        //System.out.println(response.getStatusCode());
         Assert.assertEquals(200, response.getStatusCode());
         UserAccount userAccount = response.getBody().as(UserAccount.class);
         Assert.assertEquals(0, userAccount.books.size());
