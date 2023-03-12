@@ -1,18 +1,19 @@
 package cucumber;
 
 import apiTests.Endpoints;
+import dataProvider.ConfigReader;
 import enums.Context;
 
+import java.net.MalformedURLException;
+
 public class TestContext {
-    private final String BASE_URL = "https://bookstore.toolsqa.com";
-    private final String USER_ID = "b8d7f02b-fe57-494f-b59d-0670027b1e1e";
-    private Endpoints endPoints;
+
+    private Endpoints endPoints = new Endpoints(ConfigReader.getInstance().getBaseUrl());
     private ScenarioContext scenarioContext;
 
-    public TestContext() {
-        endPoints = new Endpoints(BASE_URL);
+    public TestContext() throws MalformedURLException {
         scenarioContext = new ScenarioContext();
-        scenarioContext.setContext(Context.USER_ID, USER_ID);
+        scenarioContext.setContext(Context.USER_ID, ConfigReader.getInstance().getUserID());
     }
 
     public Endpoints getEndPoints() {
